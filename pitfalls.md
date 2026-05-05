@@ -71,7 +71,7 @@
 
 ## PIT-010: huashu-design 硬编码绝对路径导致可移植性差
 - **日期**：2026-05-04
-- **场景**：Phase 7 PPTX 导出依赖 huashu-design 的 export_deck_pptx.mjs 脚本，但 SKILL.md 中硬编码了绝对路径 `/Users/tobee1/.agents/skills/huashu-design/scripts/export_deck_pptx.mjs`
+- **场景**：Phase 7 PPTX 导出依赖 huashu-design 的 export_deck_pptx.mjs 脚本，但 SKILL.md 中硬编码了绝对路径 `/<path_to_user_folder>/.agents/skills/huashu-design/scripts/export_deck_pptx.mjs`
 - **现象**：用户指出三个问题：(1) 绝对路径不可移植到其他机器 (2) 没有 huashu-design 时整个 skill 不可用 (3) 缺少 HTML fallback 输出
 - **根因**：初期设计时将 huashu-design 作为硬依赖，未考虑安装场景差异
 - **修复**：改为 optional dependency 模式——Phase 7 分两路径：Path A（huashu-design 已安装 → `find` 动态发现脚本路径 → PPTX 导出），Path B（未安装 → 纯 HTML 输出 + 安装建议 + 用户同意后自动安装）。新增 `assets/deck_index.html` 作为 bundled HTML viewer（基于 huashu-design 的 deck_index.html 模板，canvas 尺寸适配 960×540）。Bundle Reference 表移除硬编码路径，改为运行时发现说明
@@ -108,3 +108,11 @@
 - **根因**：html2pptx.js 用 `computed.fontFamily.split(',')[0]` 提取字体名。`system-ui` 不是合法的 PowerPoint 字体名，PPTX 回退到 Calibri/SimSun。PingFang SC（HTML）和 Calibri（PPTX）的 CJK 字符宽度差异可达 30-50%，远超 Rule 10 假设的 5-10%
 - **修复**：在 `references/pptx-constraints.md` 新增 Rule 14——font-family 必须使用显式字体名 `"PingFang SC", "Microsoft YaHei", Arial, sans-serif`，禁止使用泛型值 `system-ui`、`-apple-system`。更新模板示例和 SKILL.md Phase 6 约束列表
 - **代价**：无。PingFang SC 在 macOS 上显示效果与 system-ui（实际也是 PingFang SC）一致，但 PPTX 现在能正确使用 PingFang SC 而非 Calibri
+
+## PIT-015: README 中的产品名覆盖了 UI 中提取的真实产品名
+- **日期**：2026-05-05
+- **场景**：TTRP-System 项目中，UI 页面显示"拓蜂工作台"，但生成的 deck 全部使用"TTRP System"（来自 README 标题）
+- **现象**：所有 slide 的 Cover 和标题页都显示"TTRP System"，而非用户在 UI 中看到的"拓蜂工作台"
+- **根因**：SKILL.md 的 Fact Priority Rules（UI > Code > Doc）定义正确，但 Phase 2 的 10 个步骤中没有显式的"从 UI 提取产品名"步骤。Step 10 读 README 时拿到 "TTRP System"，因无更早锁定的 UI-extracted name，直接采用
+- **修复**：在 Phase 2 Step 1 之后新增 Step 1.5（Product name extraction），明确要求按 UI templates > Config/manifest > README/docs 的优先级提取产品名并锁定为 `productName`。Step 10 加注"不得用 README 名称覆盖已提取的 productName"
+- **代价**：用户反馈后手动修复，影响所有已生成的 deck

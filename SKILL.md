@@ -42,7 +42,17 @@ Analyze a codebase → extract product knowledge → generate a role-tailored, e
 The goal: understand what the product does, how it's built, and what value it provides — from the code. Run these in sequence (each informs the next):
 
 **Step 1 — Project type & tech stack**
-Read `package.json` / `requirements.txt` / `go.mod` / `Cargo.toml` / `pom.xml` / `*.csproj` / equivalent. Identify: language, framework, key dependencies, build system.
+Read `package.json` / `requirements.txt` / `go.mod` / `Cargo.toml` / `pom.xml` / `*.csproj` / equivalent. Identify: language, framework, key dependencies, build system. Also note `name` and `description` fields, but do NOT treat these as the authoritative product name.
+
+**Step 1.5 — Product name extraction**
+Extract the product's user-facing name in this priority order (highest first):
+1. **UI templates & pages** — `<title>` tags, `<h1>` headings, navigation brand text, sidebar/logo alt text, `manifest.json`'s `name`/`short_name`, any user-visible branding in HTML/JSX/Vue templates
+2. **Config/manifest** — `package.json` `name`, `app.json` `name`, `.env` brand variables, `next.config.*` metadata
+3. **README/docs** — README title, docs headings (lowest priority)
+
+Lock in the **highest-priority name found** as `productName`. Later steps (Step 10 doc cross-reference, Phase 3 research) must not override it. If a lower-priority source uses a different name, record it as `productNameAlias` for optional use as a subtitle or parenthetical.
+
+Why this ordering: the product name that users see in the running application is the real name. README titles and package names are often internal codenames or abbreviations that don't match what's shown to users.
 
 **Step 2 — Project structure**
 Map top-level directories and their purposes. Find entry points (`main.*`, `index.*`, `app.*`, `cmd/`, `src/`, `lib/`).
@@ -68,7 +78,7 @@ Search for and analyze all brand assets:
   1. If the SVG is simple (just `<path>`, `<circle>`, `<rect>`, `<polygon>` with fills/strokes), copy as-is to `images/` and reference via `<img>`.
   2. If the SVG contains filter effects, extract the main visual paths/shapes (skip `<mask>`, `<filter>`, `<defs>` effect layers) and generate a simplified transparent PNG using `sharp`. Save to `images/` as `favicon.png` (or equivalent) and reference the PNG in slides instead of the SVG.
   3. Command to convert: `sharp(Buffer.from(simplifiedSvg)).resize(192, null, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toFile('images/favicon.png')`
-- **If no brand assets found**: Fall back to role-appropriate default palettes (see Phase 5).
+- **If no brand assets found**: all back to role-appropriate default palettes. See Phase 6 Style decisions for the fallback approach.
 
 **Step 8 — Industry domain identification**
 From the tech stack, dependencies, business logic, and variable/model naming, determine what industry or domain this product operates in (e.g., e-commerce, fintech, healthcare, EdTech, DevOps, logistics). Identify domain-specific concepts, regulatory context, and industry norms embedded in the code. If the domain is ambiguous, search the web for the product name or key terms to clarify.
@@ -77,7 +87,7 @@ From the tech stack, dependencies, business logic, and variable/model naming, de
 From code, comments, config keys, model/entity names, and API parameters, extract domain-specific terms and acronyms. For each term: the code context where it appears and a plain-language explanation. Include abbreviations and their expansions. This becomes the glossary section of the deck.
 
 **Step 10 — Doc cross-reference**
-Read README, CHANGELOG, `docs/` if present. Compare claims against actual implementation. Record any discrepancies — these are important for Developer and PM roles.
+Read README, CHANGELOG, `docs/` if present. Compare claims against actual implementation. Record any discrepancies — these are important for Developer and PM roles. **Do not use the README title or product name to override the `productName` extracted in Step 1.5** — README names are internal codenames; the UI-extracted name is the real product name.
 
 **Output**: A structured analysis held in conversation context (not a file), covering all the above. This feeds directly into content generation and theme extraction.
 
@@ -109,6 +119,12 @@ Read `references/role-templates.md` for the selected role's content template. Ge
 - Role-specific requirements (from templates)
 
 **Content must be audience-first**: Every slide should be organized from the target audience's cognitive journey, not from the product's feature list. Before writing each slide, ask: "If I were [target role] reading this for the first time, what would I need to see next to build understanding?"
+
+**Information density (critical)**: Slides explain a codebase to an audience — every pixel should carry information. The common failure mode is compressing Phase 2's rich analysis into summary labels and filling the visual gap with decoration. Instead:
+- **Use Phase 2 analysis details directly**. A feature name alone is a label; the same name plus its state machine states, validation rules, and notification triggers is information. The audience came to learn, not to read table of contents entries.
+- **3-tier text hierarchy**: heading (9-10pt, colored, bold) → body (8.5-9pt, white/light, normal) → detail (7.5-8pt, muted gray). The third tier (detail/specs/parameters) is where information density lives — without it, slides feel empty and decorative.
+- **Specific > Generic**: A feature's name is generic; the same feature with its parameter ranges, formula, enum values, or file paths is specific. Always prefer specific — it demonstrates that the slide was generated from real code analysis, not from a product brochure.
+- **Quantify when possible**: State counts, ranges, enum values, file paths, field counts. Numbers are the fastest signal of depth.
 
 **Role-specific content principles**:
 
@@ -291,7 +307,7 @@ Key constraints:
 - Text width: PPTX renders text ~5-10% wider than HTML. Use 85-90% of visual container width for body text, **75-80% for Chinese titles/headers** (Chinese characters are wider and titles wrap first). Text that fills edge-to-edge in HTML WILL wrap in PPTX.
 
 **Style decisions**:
-- **Primary source**: Use the brand palette derived from icon/favicon analysis (Phase 2 Step 7). This is the authentic brand representation and takes precedence over role defaults.
+- **Primary source (Start from existing context)**: Use the brand palette derived from icon/favicon analysis (Phase 2 Step 7). This is the authentic brand representation and takes precedence over any defaults. Never invent a "nice-looking" palette for a role — if the codebase's brand is orange and green, the deck uses orange and green regardless of whether the audience is Developer or Sales.
 - **Fallback**: If no brand assets were found, choose a palette appropriate for the role:
   - **Developer**: Dark theme, code-editor aesthetics (dark bg #1E1E2E, syntax-highlighting accents #7AA2F7 #9ECE6A)
   - **PM**: Clean blue/white (#0A66C2 accent, white bg), data-driven feel
@@ -299,6 +315,20 @@ Key constraints:
   - **End User**: Warm, friendly (light bg #FAFAFA, soft accents #4A90D9 #67B7DC)
   - **Partner**: Professional warmth (navy #1B2A4A + teal #2D9CDB)
   - **Operations**: Data-viz friendly (white bg #FFFFFF, chart colors #4E79A7 #F28E2B #E15759)
+
+**Anti AI slop rules**:
+- **No equal-sized card grids**: Every module/feature should not get the same card in the same grid. Use primary/secondary layering — 2-3 key items get more space and detail, supporting items are compact.
+- **No rounded cards with colored left border accent**: This is the #1 AI slop pattern (Material/Tailwind 2020-2024). Use uniform containers with subtle borders; differentiate with text content, not container decoration.
+- **No emoji as icons**: Never use emoji for visual decoration. If an icon is needed, use a text label or a real icon file.
+- **Containers should not compete with content**: All containers (cards, blocks, sections) should use the same background color and subtle styling. Visual interest comes from the text content, color highlights on keywords, and information density — not from decorated containers.
+- **Color for information, not decoration**: Color highlights on `<span>` elements should mark specific entities (module names, status values, technology names). Do not color containers to "make them pretty". Limit to 1 primary accent color for UI elements; additional colors only on inline text spans for entity differentiation.
+- **No filler content**: Every data point, metric, or description on a slide must come from the actual codebase analysis. Never fabricate stats, invent quotes, or add decorative numbers. If a section feels empty, add more real analysis detail — don't pad with generic content.
+
+**Visual rhythm**:
+- **Vary slide layouts intentionally**: Not every slide should be "3 equal cards in a row". Alternate between dense text layouts, data/metric blocks, call chain diagrams, comparison tables, and summary lists. A deck where every page has the same structure is a template, not design.
+- **Vary information density**: Some slides should be text-heavy (architecture details, business rules), others should be data-focused (metrics, schema stats), and 1-2 slides should be hero moments (big number, cover, CTA). The rhythm of dense → sparse → dense keeps attention.
+- **Vary font size**: Not every heading should be the same size. Key architecture concepts get larger text; supporting details get smaller text. This creates natural visual hierarchy without decoration.
+- **Section dividers break rhythm**: For 10+ slide decks, use 1-2 section divider slides (colored background, large title, no other content) to break the content into digestible groups. These reset the viewer's attention.
 
 **Output structure**:
 ```
@@ -378,7 +408,7 @@ Priority order for **product naming and positioning**:
 3. **Doc truth** — README, CHANGELOG, docs/, code comments
 4. **External truth** — web search results for competitor/market data
 
-When multiple sources name the product differently, use the UI truth. If the UI says "TTRP工作台" but README says "Tobee TRP System", the deck should use "TTRP工作台" (with "Tobee TRP System" as an alias if relevant).
+When multiple sources name the product differently, use the UI truth. For example, if the UI shows "产品工作台" but README says "Product System", the deck should use "产品工作台" (with "Product System" as an alias if relevant).
 
 Conflict handling for **technical facts** (features, architecture, tech stack):
 - **Developer & PM roles**: Flag every discrepancy with both the doc claim and the actual implementation. Example: "README claims PostgreSQL support, but code only has MySQL adapters (see `src/db/mysql.ts`). Current implementation: MySQL only."

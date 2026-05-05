@@ -325,16 +325,16 @@ PowerPoint renders text ~5-10% wider than browsers for the same font-size. Text 
 ```html
 <!-- WRONG: flex-wrap causes unpredictable wrapping in PPTX -->
 <div style="display: flex; align-items: center; gap: 6pt; flex-wrap: wrap;">
-  <div style="background: #863bff; border-radius: 4pt; padding: 4pt 10pt;">
-    <p style="font-size: 9pt; color: #FFF;">POST /api/tasks</p>
+  <div style="background: #3B82F6; border-radius: 4pt; padding: 4pt 10pt;">
+    <p style="font-size: 9pt; color: #FFF;">Client</p>
   </div>
-  <p style="font-size: 10pt; color: #6C7086;">-></p>
-  <div style="background: #1E1E2E; border-radius: 4pt; padding: 4pt 10pt;">
-    <p style="font-size: 9pt; color: #7AA2F7;">withAuth() 鉴权</p>
+  <p style="font-size: 10pt; color: #94A3B8;">-></p>
+  <div style="background: #1E293B; border-radius: 4pt; padding: 4pt 10pt;">
+    <p style="font-size: 9pt; color: #38BDF8;">auth middleware</p>
   </div>
-  <p style="font-size: 10pt; color: #6C7086;">-></p>
-  <div style="background: #1E1E2E; border-radius: 4pt; padding: 4pt 10pt;">
-    <p style="font-size: 9pt; color: #9ECE6A;">computeTaskRoi() 评分</p>
+  <p style="font-size: 10pt; color: #94A3B8;">-></p>
+  <div style="background: #1E293B; border-radius: 4pt; padding: 4pt 10pt;">
+    <p style="font-size: 9pt; color: #34D399;">service handler</p>
   </div>
 </div>
 ```
@@ -343,14 +343,14 @@ PowerPoint renders text ~5-10% wider than browsers for the same font-size. Text 
 
 ```html
 <!-- CORRECT: single text element with inline formatting -->
-<p style="font-size: 9pt; color: #CDD6F4; line-height: 2.0;">
-  <span style="color: #863bff; font-weight: 600;">POST /api/tasks</span>
-  <span style="color: #6C7086;"> → </span>
-  <span style="color: #7AA2F7;">withAuth() 鉴权</span>
-  <span style="color: #6C7086;"> → </span>
-  <span style="color: #9ECE6A;">computeTaskRoi() 评分</span>
-  <span style="color: #6C7086;"> → </span>
-  <span style="color: #F9E2AF;">INSERT ON CONFLICT UPDATE</span>
+<p style="font-size: 9pt; color: #CBD5E1; line-height: 2.0;">
+  <span style="color: #3B82F6; font-weight: 600;">Client</span>
+  <span style="color: #64748B;"> → </span>
+  <span style="color: #38BDF8;">auth middleware</span>
+  <span style="color: #64748B;"> → </span>
+  <span style="color: #34D399;">service handler</span>
+  <span style="color: #64748B;"> → </span>
+  <span style="color: #FBBF24;">db write</span>
 </p>
 ```
 
@@ -362,20 +362,20 @@ html2pptx.js processes heading tags (`<h1>`-`<h6>`) as standalone text elements 
 
 ```html
 <!-- WRONG: h3 inside li causes double-processing -->
-<li><h3 style="font-size: 10pt; color: #863bff; display: inline;">任务管理</h3> — CRUD + 状态机</li>
+<li><h3 style="font-size: 10pt; color: #3B82F6; display: inline;">Feature A</h3> — some description</li>
 
 <!-- WRONG: h2 inline next to p creates two separate text boxes -->
-<div style="background: #313244; padding: 6pt 10pt;">
-  <h2 style="font-size: 9pt; color: #863bff; display: inline;">TTRP</h2>
-  <p style="font-size: 9pt; color: #CDD6F4; display: inline;">Task / Ticket / Requirement / Project</p>
+<div style="background: #1E293B; padding: 6pt 10pt;">
+  <h2 style="font-size: 9pt; color: #3B82F6; display: inline;">Term</h2>
+  <p style="font-size: 9pt; color: #CBD5E1; display: inline;"> — definition text</p>
 </div>
 
 <!-- CORRECT: span for inline colored text -->
-<li><span style="font-size: 10pt; color: #863bff; font-weight: 700;">任务管理</span> — CRUD + 状态机</li>
+<li><span style="font-size: 10pt; color: #3B82F6; font-weight: 700;">Feature A</span> — some description</li>
 
 <!-- CORRECT: single p with span for inline formatting -->
-<div style="background: #313244; padding: 6pt 10pt;">
-  <p style="font-size: 9pt; color: #CDD6F4;"><span style="color: #863bff; font-weight: 700;">TTRP</span> — Task / Ticket / Requirement / Project</p>
+<div style="background: #1E293B; padding: 6pt 10pt;">
+  <p style="font-size: 9pt; color: #CBD5E1;"><span style="color: #3B82F6; font-weight: 700;">Term</span> — definition text</p>
 </div>
 ```
 
