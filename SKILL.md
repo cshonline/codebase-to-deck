@@ -307,14 +307,28 @@ Key constraints:
 - Text width: PPTX renders text ~5-10% wider than HTML. Use 85-90% of visual container width for body text, **75-80% for Chinese titles/headers** (Chinese characters are wider and titles wrap first). Text that fills edge-to-edge in HTML WILL wrap in PPTX.
 
 **Style decisions**:
-- **Primary source (Start from existing context)**: Use the brand palette derived from icon/favicon analysis (Phase 2 Step 7). This is the authentic brand representation and takes precedence over any defaults. Never invent a "nice-looking" palette for a role — if the codebase's brand is orange and green, the deck uses orange and green regardless of whether the audience is Developer or Sales.
-- **Fallback**: If no brand assets were found, choose a palette appropriate for the role:
-  - **Developer**: Dark theme, code-editor aesthetics (dark bg #1E1E2E, syntax-highlighting accents #7AA2F7 #9ECE6A)
-  - **PM**: Clean blue/white (#0A66C2 accent, white bg), data-driven feel
-  - **Sales/BD**: Bold, confident (deep blue #1A3A5C + gold/orange #E8A838 accents)
-  - **End User**: Warm, friendly (light bg #FAFAFA, soft accents #4A90D9 #67B7DC)
-  - **Partner**: Professional warmth (navy #1B2A4A + teal #2D9CDB)
-  - **Operations**: Data-viz friendly (white bg #FFFFFF, chart colors #4E79A7 #F28E2B #E15759)
+Read `references/design-philosophy.md` for the complete design personality framework with detailed palettes, rationale, and anti-patterns.
+
+**Design personality > role template**. The visual language follows the PRODUCT's character, not the audience role. A fintech product should look like fintech whether the audience is a Developer or a Sales VP. The role only fine-tunes density and emphasis within that personality.
+
+**Step 1 — Brand palette (primary source)**: Use the brand palette from icon/favicon analysis (Phase 2 Step 7). Real brand colors drive everything — canvas temperature, accent, neutrals all derive from the brand. Never override real brand colors with defaults.
+
+**Step 2 — No brand? Determine product temperament** from codebase analysis:
+What is this product's personality? Look at: industry domain, B2B vs B2C, technical depth, target user sophistication. Then select a canvas temperature from `references/design-philosophy.md`:
+- **Pure White Gallery** → developer tools, infrastructure, precision engineering
+- **Warm White Paper** → education, healthcare, SaaS, content platforms
+- **Cream Friendly** → e-commerce, social, lifestyle, consumer products
+- **Cool Gray Professional** → finance, legal, enterprise SaaS, data platforms
+- **Near-Black Cinematic** → creative tools, media, gaming, luxury
+- **Deep Blue Authority** → security, compliance, government, large enterprise
+
+**Step 3 — Role fine-tuning** (within the product's visual language):
+- **Developer**: Lower decoration, higher density. Font -1pt, lighter/no shadows
+- **PM**: Richer data-viz colors (same hue family), prominent tables/charts
+- **Sales/BD**: Boost accent saturation ~10%, larger CTAs, stronger contrast
+- **End User**: Larger border-radius, softer shadows, more whitespace
+- **Partner**: Product personality but restrained — "professional partner" not "sales pitch"
+- **Operations**: Add semantic colors (success/warning/error) for status indicators
 
 **Anti AI slop rules**:
 - **No equal-sized card grids**: Every module/feature should not get the same card in the same grid. Use primary/secondary layering — 2-3 key items get more space and detail, supporting items are compact.
@@ -435,7 +449,8 @@ When the user specifies a role not in the 7 presets:
 | File | Purpose | When to read |
 |------|---------|-------------|
 | `references/role-templates.md` | Detailed content templates for all 7 roles | Phase 1 (role confirmation) and Phase 4 (content generation) |
-| `references/pptx-constraints.md` | PPTX HTML 4-constraint rules, template, common errors | Phase 6 (HTML slide generation) |
+| `references/design-philosophy.md` | Visual design personality framework, canvas temperatures, palette recipes, anti-patterns | Phase 6 (style decisions) |
+| `references/pptx-constraints.md` | PPTX HTML 14-constraint rules, template, common errors | Phase 6 (HTML slide generation) |
 | `assets/deck_index.html` | HTML slide viewer template (fallback when huashu-design unavailable) | Phase 6 (generate index.html) |
 
 **Optional external dependency**: If the huashu-design skill is installed, Phase 7 uses its `export_deck_pptx.mjs` script for PPTX export. The script is discovered at runtime via `find` — no hardcoded paths.
